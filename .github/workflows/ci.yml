@@ -1,0 +1,37 @@
+name: Pruebas end to end y performance
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  full-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Clonar repositorio
+        uses: actions/checkout@v3
+
+      - name: 🧰 Configurar Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.21
+
+      - name: 📦 Instalar dependencias
+        run: go mod tidy
+
+      - name: 🚀 Iniciar servidor en segundo plano
+        run: |
+          go run main.go &
+          sleep 5 # espera que el servidor esté arriba
+
+      - name: 🧪 Ejecutar pruebas E2E
+        run: |
+          echo "▶ Ejecutando pruebas End-to-End con chromedp"
+          go test ./tests -run TestEndToEnd -v -count=1
+
+      - name: 🧪 Ejecutar pruebas de performance
+        run: |
+          echo "▶ Ejecutando pruebas de performance con vegeta"
+          go test ./tests -run TestPerformanceCreateSubjects -v -count=1

@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <!-- Titulo de la pestaña de la page -->
+        <title>
+            Gestión de materias
+        </title>
+        <style>
+            body { font-family: sans-serif; padding: 20px; }
+            input, button { margin: 5px; }
+            #subjectsList { margin-top: 20px; }
+        </style>
+    </head>
+    <body>
+        <!-- Seccion para crear materias -->
+        <!-- Titulo de crear materia -->
+        <h1>
+            Crear materia
+        </h1>
+        <!-- Input de id -->
+        <input 
+            id="subjectId"
+            placeholder="ID"
+        ><br>
+        <!-- Input de titulo -->
+        <input 
+            id="subjectTitle" 
+            placeholder="Título"
+        ><br>
+        <!-- Input de descripcion -->
+        <input 
+            id="subjectDescription"   
+            placeholder="Descripcion"
+        ><br>
+        <!-- Boton para crear materia -->
+        <button
+            id="submitBtn"
+            onclick="createSubject()"
+        >
+            Crear
+        </button>
+        <!-- Mensaje de exito -->
+        <p 
+            id="successMessage" 
+            style="display:none; color:green;"
+        >
+            Creado correctamente
+        </p>
+        <hr>
+
+        <!-- Seccion de recuperar todas las materias -->
+        <!-- Titulo de recuperar todas las materias -->
+        <h2>
+            Todos las materias
+        </h2>
+        <!-- Boton para recuperar todas las materias -->
+        <button onclick="getSubjects()">
+            Mostrar Todas
+        </button>
+        <ul id="subjectsList"></ul>
+        <hr>
+
+        <!-- Seccion de recuperar materia por id -->
+        <!-- Titulo de recuperar materia por id -->
+        <h2>
+            Buscar Subject por ID
+        </h2>
+        <!-- Input del id -->
+        <input 
+            id="searchById" 
+            placeholder="ID"
+        >
+        <!-- Boton para recuperar materia por id -->
+        <button onclick="getSubjectById()">
+            Buscar
+        </button>
+        <pre id="searchResult"></pre>
+
+        <hr>
+
+        <!-- Seccion para actualizar materia -->
+        <!-- Titulo de actualizar materia -->
+        <h2>
+            Actualizar materia
+        </h2>
+        <!-- Input del id de la materia a actualizar -->
+        <input 
+            id="updateId"
+            placeholder="ID de la materia a actualizar"
+        >
+        <br>
+        <!-- Input del titulo -->
+        <input 
+            id="updateTitle"
+            placeholder="Nuevo título"
+        >
+        <br>
+        <!-- Input de la descripcion -->
+        <input 
+            id="updateDescription"
+            placeholder="Nueva descripción"
+        >
+        <br>
+        <!-- Boton para actualizar materia -->
+        <button onclick="updateSubject()">
+            Actualizar
+        </button>
+        <p 
+            id="updateMessage"
+            style="color:green;"
+        ></p>
+        <hr>
+
+        <!-- Seccion de eliminar materias -->
+        <!-- Titulo de eliminar materia -->
+        <h2>
+            Eliminar materia por identificador
+        </h2>
+        <!-- Input para eliminar materia -->
+        <input 
+            id="deleteId" 
+            placeholder="ID"
+        >
+        <!-- Boton para eliminar materia -->
+        <button onclick="deleteSubject()">
+            Eliminar
+        </button>
+        <!-- Mensaje de eliminado -->
+        <p 
+            id="deleteMessage" 
+            style="color:red;"
+        ></p>
+
+        <script>
+            // Ruta para las peticiones
+            const api = "http://localhost:8080";
+
+            // Metodo para limpiar los campos del formulario
+            function cleanMessages() {
+                document.getElementById("successMessage").style.display = "none";
+                document.getElementById("successMessage").innerText     = "";
+                document.getElementById("updateMessage").innerText      = "";
+                document.getElementById("deleteMessage").innerText      = "";
+                document.getElementById("searchResult").innerText       = "";
+            }
+
+            // Metodo para crear materia
+            function createSubject() {
+                // Limpia los campos del formulario
+                cleanMessages();
+
+                // Setea los campos para la peticion
+                const data = {
+                    id          : document.getElementById("subjectId").value,
+                    title       : document.getElementById("subjectTitle").value,
+                    description : document.getElementById("subjectDescription").value,
+                };
+            
+                // Realiza fetch para la peticion para crear materia nueva
+                fetch(`${api}/subjects`, {
+                    method  : "POST",
+                    headers : { "Content-Type": "application/json" },
+                    body    : JSON.stringify(data)
+                })
+                    .then(res => res.json())
+                    .then(() => {
+                        document.getElementById("successMessage").style.display = "block";
+                        // Mensaje de exito
+                        document.getElementById("successMessage").innerText     = "Creado correctamente";
+
+                        // Limpia los campos del formulario
+                        document.getElementById("subjectId").value          = "";
+                        document.getElementById("subjectTitle").value       = "";
+                        document.getElementById("subjectDescription").value = "";
+                    });
+            }
+
+            // Metodo para recuperar todas las materias
+            function getSubjects() {
+                // Limpia los campos del formulario
+                cleanMessages();
+
+                // Realiza fetch para la peticion para recuperar todas la materias
+                fetch(`${api}/subjects`)
+                    .then(res => res.json())
+                    .then(data => {
+                        // Crea una lista de materias
+                        const list = document.getElementById("subjectsList");
+                        list.innerHTML = "";
+
+                        // Muestra cada materia creada
+                        data.forEach(s => {
+                            const li       = document.createElement("li");
+                            li.textContent = `${s.id} - ${s.title} - ${s.description}`;
+                            list.appendChild(li);
+                        });
+                    });
+            }
+
+            // Metodo para recuperar materias por su id
+            function getSubjectById() {
+                // Limpia los campos del formulario
+                cleanMessages();
+
+                // Recupera el id
+                const id = document.getElementById("searchById").value;
+
+                // Realiza fetch para la peticion para recuperar una materia por su id
+                fetch(`${api}/subject/${id}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        // Muestra el json de la materia
+                        document.getElementById("searchResult").innerText =
+                        JSON.stringify(data, null, 2);
+                    });
+            }
+
+            // Metodo para actualizar materia
+            function updateSubject() {
+                // Limpia los campos del formulario
+                cleanMessages();
+
+                // Recupera el id
+                const id = document.getElementById("updateId").value;
+
+                // Setea los datos
+                const data = {
+                    id          : id,
+                    title       : document.getElementById("updateTitle").value,
+                    description : document.getElementById("updateDescription").value,
+                };
+
+                // Realiza fetch para la peticion para actualizar materia existente
+                fetch(`${api}/subject/${id}`, {
+                    method  : "PUT",
+                    headers : { "Content-Type": "application/json" },
+                    body    : JSON.stringify(data)
+                })
+                    .then(res => res.json())
+                    .then(() => {
+                        // Mensaje de exito
+                        document.getElementById("updateMessage").innerText = "Actualizado correctamente";
+
+                        // Limpia campos del formulario
+                        document.getElementById("updateId").value          = "";
+                        document.getElementById("updateTitle").value       = "";
+                        document.getElementById("updateDescription").value = "";
+                    });
+            }
+
+            // Metodo para eliminar materia
+            function deleteSubject() {
+                // Limpia los campos del formulario
+                cleanMessages();
+
+                // Recupera el id
+                const id = document.getElementById("deleteId").value;
+
+                // Realiza fetch para la peticion para eliminar una materia por su id
+                fetch(`${api}/subject/${id}`, {
+                    method: "DELETE"
+                })
+                    .then(() => {
+                        // Mensaje de exito
+                        document.getElementById("deleteMessage").innerText = "Eliminado correctamente";
+                        document.getElementById("deleteId").value          = "";
+                    });
+            }
+        </script>
+    </body>
+</html>
