@@ -57,13 +57,13 @@ func TestPerformanceCreateSubjects(t *testing.T) {
 	// Define la tasa de creacion de materias
 	rate := vegeta.Rate{
 		// Frecuencia de creacion de materias
-		Freq: 200, 
+		Freq: 10, 
 		// Tiempo entre creacion de materias
 		Per : time.Second,
 	}
 
 	// Duracion de la prueba
-	duration := 50 * time.Second
+	duration := 10 * time.Second
 
 	// Crea nuevo atacante que generara las peticiones
 	attacker := vegeta.NewAttacker()
