@@ -1,12 +1,13 @@
-name: Pruebas end to end y performance
+name: CI - Go API con E2E y Performance
 
 on:
   push:
-    branches:
-      - master
+    branches: [master]
+  pull_request:
+    branches: [master]
 
 jobs:
-  full-tests:
+  test-e2e-and-performance:
     runs-on: ubuntu-latest
 
     steps:
@@ -18,20 +19,27 @@ jobs:
         with:
           go-version: 1.21
 
-      - name: 📦 Instalar dependencias
+      - name: 📦 Instalar dependencias Go
         run: go mod tidy
 
-      - name: 🚀 Iniciar servidor en segundo plano
+      - name: 🧪 Instalar Chromium
         run: |
-          go run main.go &
-          sleep 5 # espera que el servidor esté arriba
+          sudo apt-get update
+          sudo apt-get install -y chromium-browser fonts-liberation
 
-      - name: 🧪 Ejecutar pruebas E2E
+      - name: 🚀 Levantar servidor Go en background
         run: |
-          echo "▶ Ejecutando pruebas End-to-End con chromedp"
+          nohup go run main.go > server.log 2>&1 &
+          sleep 5
+
+      - name: 🧪 Ejecutar pruebas End-to-End con chromedp
+        env:
+          CHROME_PATH: /usr/bin/chromium-browser
+        run: |
+          echo "▶ Ejecutando pruebas E2E"
           go test ./tests -run TestEndToEnd -v -count=1
 
-      - name: 🧪 Ejecutar pruebas de performance
+      - name: 🚀 Ejecutar prueba de performance con vegeta
         run: |
-          echo "▶ Ejecutando pruebas de performance con vegeta"
+          echo "▶ Ejecutando prueba de performance"
           go test ./tests -run TestPerformanceCreateSubjects -v -count=1
